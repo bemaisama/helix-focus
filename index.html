@@ -10,7 +10,8 @@
         
         /* Controles de carga */
         .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px; }
-        .file-btn { background: #333; color: white; border: 1px solid #555; padding: 10px; border-radius: 8px; font-size: 0.8rem; cursor: pointer; }
+        .file-btn { background: #333; color: white; border: 1px solid #555; padding: 10px; border-radius: 8px; font-size: 0.8rem; cursor: pointer; transition: background-color 0.3s, border-color 0.3s; }
+        .file-btn.loaded { background-color: #004d40; border-color: #00e676; }
         input[type="file"] { display: none; }
         
         /* El Pad XY */
@@ -54,8 +55,6 @@
 
 <script>
     // --- CONFIGURACIÓN DE MAPEO MIDI (CC) ---
-    // Estos números deben coincidir con lo que configures en tu Helix
-    // Command Center > Instant Commands o Controller Assign
     const CC_MAP = {
         "Drive": 4,  "Bass": 5,   "Mid": 6, 
         "Treble": 7, "Presence": 8, "Master": 9,
@@ -65,16 +64,17 @@
     let midiOut = null;
     let corners = { tl: {}, tr: {}, bl: {}, br: {} };
 
+    document.addEventListener('DOMContentLoaded', loadSessionFromStorage);
+
     // 1. INICIALIZAR MIDI
     async function initMIDI() {
         try {
             const access = await navigator.requestMIDIAccess();
             const outputs = Array.from(access.outputs.values());
             
-            // Buscar dispositivo Line 6
             midiOut = outputs.find(o => o.name.includes("Helix") || o.name.includes("HX") || o.name.includes("Line 6"));
             
-            if (!midiOut && outputs.length > 0) midiOut = outputs[0]; // Si no encuentra nombre, usa el primero
+            if (!midiOut && outputs.length > 0) midiOut = outputs[0];
             
             if (midiOut) {
                 document.getElementById('connect-btn').style.background = "#2196F3";
@@ -88,7 +88,7 @@
         }
     }
 
-    // 2. LEER ARCHIVOS .HLX
+    // 2. LEER ARCHIVOS .HLX Y GUARDAR SESIÓN
     function loadHlx(input, key) {
         const file = input.files[0];
         if (!file) return;
@@ -97,34 +97,77 @@
         reader.onload = (e) => {
             try {
                 const json = JSON.parse(e.target.result);
-                // Lógica simplificada para encontrar parámetros de Amp
-                // Busca recursivamente en el JSON
                 const str = JSON.stringify(json);
                 const params = {};
                 
-                // Extraemos valores básicos si existen en el JSON plano
-                // Esto es un "truco" para no parsear todo el árbol complejo de Line 6
                 Object.keys(CC_MAP).forEach(pName => {
-                    // Regex para encontrar "NombreParam": ValorNumerico
                     const regex = new RegExp(`"${pName}":\\s*([0-9.]+)`, 'g');
                     const match = regex.exec(str);
                     if (match) params[pName] = parseFloat(match[1]);
                 });
 
-                corners[key] = params;
-                log(`Cargado Preset ${key.toUpperCase()} (${Object.keys(params).length} params)`);
-            } catch (err) { log("Error leyendo archivo"); }
+                if (Object.keys(params).length > 0) {
+                    corners[key] = params;
+                    // Guardar en localStorage
+                    localStorage.setItem(`helixFocus_params_${key}`, JSON.stringify(params));
+                    localStorage.setItem(`helixFocus_fileName_${key}`, file.name);
+                    
+                    updateCornerUI(key, file.name);
+                    log(`Cargado ${key.toUpperCase()}: ${file.name} (${Object.keys(params).length} params)`);
+                } else {
+                    log(`Error: No se encontraron parámetros mapeados en ${file.name}`);
+                }
+            } catch (err) { 
+                log("Error leyendo archivo. ¿Es un .hlx válido?"); 
+                updateCornerUI(key, null); // Revertir UI si falla
+            }
         };
         reader.readAsText(file);
     }
 
-    // 3. INTERPOLACIÓN Y UI
+    // 3. ACTUALIZAR UI DE LOS BOTONES
+    function updateCornerUI(key, fileName) {
+        const label = document.querySelector(`input[onchange="loadHlx(this, '${key}')"]`).parentElement;
+        if (fileName) {
+            label.classList.add('loaded');
+            // Truncar nombre de archivo si es muy largo
+            const displayName = fileName.length > 20 ? fileName.substring(0, 18) + '...' : fileName;
+            label.innerHTML = `✅ ${displayName}<input type="file" onchange="loadHlx(this, '${key}')">`;
+        } else {
+            label.classList.remove('loaded');
+            const cornerName = {tl: 'A (Top-L)', tr: 'B (Top-R)', bl: 'C (Bot-L)', br: 'D (Bot-R)'}[key];
+            label.innerHTML = `📂 Cargar ${cornerName}<input type="file" onchange="loadHlx(this, '${key}')">`;
+        }
+    }
+
+    // 4. CARGAR SESIÓN DESDE LOCALSTORAGE
+    function loadSessionFromStorage() {
+        log("Buscando sesión guardada...");
+        let found = false;
+        ['tl', 'tr', 'bl', 'br'].forEach(key => {
+            const paramsStr = localStorage.getItem(`helixFocus_params_${key}`);
+            const fileName = localStorage.getItem(`helixFocus_fileName_${key}`);
+
+            if (paramsStr && fileName) {
+                corners[key] = JSON.parse(paramsStr);
+                updateCornerUI(key, fileName);
+                found = true;
+            }
+        });
+        if (found) {
+            log("Sesión anterior restaurada. ¡Listo para tocar!");
+        } else {
+            log("Carga presets en las 4 esquinas para empezar.");
+        }
+    }
+
+    // 5. INTERPOLACIÓN Y UI
     const pad = document.getElementById('pad-container');
     const cursor = document.getElementById('cursor');
 
     pad.addEventListener('pointermove', (e) => {
         if (!e.isPrimary) return; 
-        if (e.buttons === 0 && e.pointerType === 'mouse') return; // Solo arrastrar mouse o tocar
+        if (e.buttons === 0 && e.pointerType === 'mouse') return;
         
         const rect = pad.getBoundingClientRect();
         let x = (e.clientX - rect.left) / rect.width;
@@ -132,14 +175,12 @@
         x = Math.max(0, Math.min(1, x));
         y = Math.max(0, Math.min(1, y));
 
-        // Mover Cursor Visual
         cursor.style.left = (x * 100) + '%';
         cursor.style.top = (y * 100) + '%';
 
         processMidi(x, y);
     });
 
-    // Evitar scroll en móviles al tocar el pad
     pad.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
 
     function processMidi(x, y) {
@@ -147,7 +188,6 @@
 
         let logStr = "";
         
-        // Usamos las claves de la esquina A como referencia
         Object.keys(corners.tl).forEach(param => {
             if (CC_MAP[param]) {
                 const vTL = corners.tl[param] || 0;
@@ -155,21 +195,17 @@
                 const vBL = corners.bl[param] || vTL;
                 const vBR = corners.br[param] || vTL;
 
-                // Interpolación Bilineal
                 const top = vTL + (vTR - vTL) * x;
                 const bottom = vBL + (vBR - vBL) * x;
                 const val = top + (bottom - top) * y;
 
-                // Enviar MIDI CC
-                // Los valores en HLX suelen ser 0.0 a 1.0. MIDI es 0 a 127.
                 const midiVal = Math.min(127, Math.max(0, Math.floor(val * 127)));
                 
-                midiOut.send([0xB0, CC_MAP[param], midiVal]); // Canal 1, CC, Valor
+                midiOut.send([0xB0, CC_MAP[param], midiVal]);
                 
                 logStr += `${param}: ${midiVal} \n`;
             }
         });
-        // Actualizar log solo cada ciertos frames para rendimiento (opcional)
         document.getElementById('status').innerText = logStr;
     }
 
