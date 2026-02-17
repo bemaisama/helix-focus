@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Helix Focus Controller</title>
+    <style>
+        body { background-color: #121212; color: #e0e0e0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; margin: 0; overflow: hidden; }
+        h2 { margin: 10px 0; color: #ff5722; }
+        
+        /* Controles de carga */
+        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px; }
+        .file-btn { background: #333; color: white; border: 1px solid #555; padding: 10px; border-radius: 8px; font-size: 0.8rem; cursor: pointer; }
+        input[type="file"] { display: none; }
+        
+        /* El Pad XY */
+        #pad-container {
+            width: 90vw; height: 50vh; margin: 10px auto;
+            background: radial-gradient(circle, #2c2c2c 0%, #1a1a1a 100%);
+            border: 2px solid #ff5722; border-radius: 12px;
+            position: relative; touch-action: none; /* Crucial para móviles */
+        }
+        #cursor {
+            width: 30px; height: 30px; background: rgba(255, 87, 34, 0.8);
+            border: 2px solid #fff; border-radius: 50%;
+            position: absolute; transform: translate(-50%, -50%);
+            top: 50%; left: 50%; box-shadow: 0 0 15px #ff5722;
+        }
+
+        /* Monitor de datos */
+        #status { font-family: monospace; font-size: 0.9rem; color: #00e676; margin-top: 10px; white-space: pre-wrap; height: 100px; overflow-y: auto; }
+        
+        /* Botón Conectar */
+        #connect-btn { background: #00e676; color: black; border: none; padding: 10px 20px; font-weight: bold; border-radius: 20px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+    <h2>Helix Focus View</h2>
+    <button id="connect-btn" onclick="initMIDI()">🔌 Conectar USB MIDI</button>
+
+    <div class="controls">
+        <label class="file-btn">📂 Cargar A (Top-L)<input type="file" onchange="loadHlx(this, 'tl')"></label>
+        <label class="file-btn">📂 Cargar B (Top-R)<input type="file" onchange="loadHlx(this, 'tr')"></label>
+        <label class="file-btn">📂 Cargar C (Bot-L)<input type="file" onchange="loadHlx(this, 'bl')"></label>
+        <label class="file-btn">📂 Cargar D (Bot-R)<input type="file" onchange="loadHlx(this, 'br')"></label>
+    </div>
+
+    <div id="pad-container">
+        <div id="cursor"></div>
+    </div>
+
+    <div id="status">Esperando conexión...</div>
+
+<script>
+    // --- CONFIGURACIÓN DE MAPEO MIDI (CC) ---
+    // Estos números deben coincidir con lo que configures en tu Helix
+    // Command Center > Instant Commands o Controller Assign
+    const CC_MAP = {
+        "Drive": 4,  "Bass": 5,   "Mid": 6, 
+        "Treble": 7, "Presence": 8, "Master": 9,
+        "ChVol": 10, "Mix": 11, "Decay": 12
+    };
+
+    let midiOut = null;
+    let corners = { tl: {}, tr: {}, bl: {}, br: {} };
+
+    // 1. INICIALIZAR MIDI
+    async function initMIDI() {
+        try {
+            const access = await navigator.requestMIDIAccess();
+            const outputs = Array.from(access.outputs.values());
+            
+            // Buscar dispositivo Line 6
+            midiOut = outputs.find(o => o.name.includes("Helix") || o.name.includes("HX") || o.name.includes("Line 6"));
+            
+            if (!midiOut && outputs.length > 0) midiOut = outputs[0]; // Si no encuentra nombre, usa el primero
+            
+            if (midiOut) {
+                document.getElementById('connect-btn').style.background = "#2196F3";
+                document.getElementById('connect-btn').innerText = "✅ " + midiOut.name;
+                log("Conectado a: " + midiOut.name);
+            } else {
+                alert("No se encontró pedal. Asegúrate de conectar el cable OTG antes de abrir Chrome.");
+            }
+        } catch (e) {
+            alert("Error MIDI: " + e);
+        }
+    }
+
+    // 2. LEER ARCHIVOS .HLX
+    function loadHlx(input, key) {
+        const file = input.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const json = JSON.parse(e.target.result);
+                // Lógica simplificada para encontrar parámetros de Amp
+                // Busca recursivamente en el JSON
+                const str = JSON.stringify(json);
+                const params = {};
+                
+                // Extraemos valores básicos si existen en el JSON plano
+                // Esto es un "truco" para no parsear todo el árbol complejo de Line 6
+                Object.keys(CC_MAP).forEach(pName => {
+                    // Regex para encontrar "NombreParam": ValorNumerico
+                    const regex = new RegExp(`"${pName}":\\s*([0-9.]+)`, 'g');
+                    const match = regex.exec(str);
+                    if (match) params[pName] = parseFloat(match[1]);
+                });
+
+                corners[key] = params;
+                log(`Cargado Preset ${key.toUpperCase()} (${Object.keys(params).length} params)`);
+            } catch (err) { log("Error leyendo archivo"); }
+        };
+        reader.readAsText(file);
+    }
+
+    // 3. INTERPOLACIÓN Y UI
+    const pad = document.getElementById('pad-container');
+    const cursor = document.getElementById('cursor');
+
+    pad.addEventListener('pointermove', (e) => {
+        if (!e.isPrimary) return; 
+        if (e.buttons === 0 && e.pointerType === 'mouse') return; // Solo arrastrar mouse o tocar
+        
+        const rect = pad.getBoundingClientRect();
+        let x = (e.clientX - rect.left) / rect.width;
+        let y = (e.clientY - rect.top) / rect.height;
+        x = Math.max(0, Math.min(1, x));
+        y = Math.max(0, Math.min(1, y));
+
+        // Mover Cursor Visual
+        cursor.style.left = (x * 100) + '%';
+        cursor.style.top = (y * 100) + '%';
+
+        processMidi(x, y);
+    });
+
+    // Evitar scroll en móviles al tocar el pad
+    pad.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+
+    function processMidi(x, y) {
+        if (!midiOut || Object.keys(corners.tl).length === 0) return;
+
+        let logStr = "";
+        
+        // Usamos las claves de la esquina A como referencia
+        Object.keys(corners.tl).forEach(param => {
+            if (CC_MAP[param]) {
+                const vTL = corners.tl[param] || 0;
+                const vTR = corners.tr[param] || vTL;
+                const vBL = corners.bl[param] || vTL;
+                const vBR = corners.br[param] || vTL;
+
+                // Interpolación Bilineal
+                const top = vTL + (vTR - vTL) * x;
+                const bottom = vBL + (vBR - vBL) * x;
+                const val = top + (bottom - top) * y;
+
+                // Enviar MIDI CC
+                // Los valores en HLX suelen ser 0.0 a 1.0. MIDI es 0 a 127.
+                const midiVal = Math.min(127, Math.max(0, Math.floor(val * 127)));
+                
+                midiOut.send([0xB0, CC_MAP[param], midiVal]); // Canal 1, CC, Valor
+                
+                logStr += `${param}: ${midiVal} \n`;
+            }
+        });
+        // Actualizar log solo cada ciertos frames para rendimiento (opcional)
+        document.getElementById('status').innerText = logStr;
+    }
+
+    function log(msg) { document.getElementById('status').innerText = msg; }
+</script>
+</body>
+</html>
