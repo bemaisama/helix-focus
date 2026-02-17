@@ -5,7 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Helix Focus Controller</title>
     <style>
-        body { background-color: #121212; color: #e0e0e0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; margin: 0; overflow: hidden; }
+        body { 
+            color: #e0e0e0; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            text-align: center; 
+            margin: 0; 
+            overflow: hidden;
+            
+            /* --- FONDO CON IMAGEN --- */
+            /* El color de fondo original se usa como fallback */
+            background-color: #121212; 
+            /* Puedes cambiar la URL por la imagen que quieras */
+            background-image: linear-gradient(rgba(18, 18, 18, 0.85), rgba(18, 18, 18, 0.85)), url('https://www.svgrepo.com/show/506934/grid-plus.svg');
+            background-size: cover;
+            background-position: center center;
+            background-attachment: fixed;
+        }
         h2 { margin: 10px 0; color: #ff5722; }
         
         /* Controles de carga */
