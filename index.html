@@ -3,105 +3,172 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Helix Focus - VibroVerb Edition</title>
+    <title>Helix Focus - UI Pro</title>
     <style>
+        /* --- ESTILO GENERAL (UI PRO) --- */
         body { 
-            background-color: #1a1a1a; color: #fff; 
-            font-family: 'Segoe UI', sans-serif; text-align: center; margin: 0; overflow: hidden;
+            background-color: #121212; 
+            color: #e0e0e0; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            text-align: center; 
+            margin: 0; 
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            overflow: hidden;
         }
         
-        h2 { color: #ff5722; text-transform: uppercase; letter-spacing: 1px; margin-top: 15px;}
+        h2 { 
+            color: #ff9800; 
+            font-size: 1.2rem; 
+            letter-spacing: 1px; 
+            margin: 20px 0 10px 0;
+            text-transform: uppercase;
+        }
         
-        /* El Joystick */
+        /* --- CONTENEDOR DEL JOYSTICK (CAMBIO DE TAMAÑO) --- */
+        #pad-wrapper {
+            flex-grow: 1; /* Ocupa el espacio disponible */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
         #pad-container {
-            width: 90vw; height: 55vh; margin: 15px auto;
-            /* Fondo con gradiente visual para guiarte */
-            background: linear-gradient(to bottom, #4e342e 0%, #263238 100%);
-            border: 3px solid #ff5722; border-radius: 15px;
-            position: relative; touch-action: none;
-            box-shadow: 0 0 25px rgba(255, 87, 34, 0.2);
+            /* TAMAÑO ARREGLADO: Ahora es un cuadrado responsivo */
+            width: 85vw; 
+            height: 85vw; 
+            max-width: 350px; 
+            max-height: 350px;
+            
+            background: radial-gradient(circle at center, #2c2c2c 0%, #151515 100%);
+            border: 2px solid #ff9800; 
+            border-radius: 20px;
+            position: relative; 
+            touch-action: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
         
-        /* Líneas guía del centro */
-        #pad-container::after {
-            content: ""; position: absolute; top: 50%; left: 0; right: 0; border-top: 1px dashed rgba(255,255,255,0.2); pointer-events: none;
+        /* Guías visuales (Cruz central) */
+        #pad-container::after, #pad-container::before {
+            content: ""; position: absolute; background: rgba(255, 152, 0, 0.1); pointer-events: none;
         }
-        #pad-container::before {
-            content: ""; position: absolute; left: 50%; top: 0; bottom: 0; border-left: 1px dashed rgba(255,255,255,0.2); pointer-events: none;
-        }
+        #pad-container::after { top: 50%; left: 10px; right: 10px; height: 1px; }
+        #pad-container::before { left: 50%; top: 10px; bottom: 10px; width: 1px; }
 
+        /* El punto rojo */
         #cursor {
-            width: 50px; height: 50px; background: rgba(255, 87, 34, 0.7);
-            border: 3px solid #fff; border-radius: 50%;
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            pointer-events: none; box-shadow: 0 0 15px #ff5722;
+            width: 40px; height: 40px; 
+            background: rgba(255, 152, 0, 0.8);
+            border: 3px solid #fff; 
+            border-radius: 50%;
+            position: absolute; 
+            top: 50%; left: 50%; 
+            transform: translate(-50%, -50%);
+            pointer-events: none; 
+            box-shadow: 0 0 15px rgba(255, 152, 0, 0.6);
+            transition: width 0.1s, height 0.1s;
+        }
+        /* Efecto al tocar */
+        #pad-container:active #cursor { width: 35px; height: 35px; background: #fff; }
+
+        /* --- BOTONES --- */
+        .controls-area {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding-bottom: 20px;
+            align-items: center;
         }
 
-        /* Botones */
         .btn { 
-            padding: 12px; border-radius: 8px; border: none; 
-            font-weight: bold; margin: 5px; cursor: pointer; width: 85%;
-            font-size: 0.9rem; text-transform: uppercase;
+            padding: 12px 25px; 
+            border-radius: 30px; /* Redondos tipo pastilla */
+            border: none; 
+            font-weight: 600; 
+            cursor: pointer; 
+            width: 80%; 
+            max-width: 300px;
+            font-size: 0.9rem; 
+            transition: transform 0.1s;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
         }
-        .btn-connect { background: #00e676; color: #000; }
-        .btn-file { background: #37474f; color: #fff; border: 1px solid #546e7a; }
-        .btn-file.loaded { background: #ff5722; border-color: #ffab91; color: white; }
+        .btn:active { transform: scale(0.97); }
+        
+        .btn-connect { background: #00c853; color: #000; box-shadow: 0 4px 10px rgba(0, 200, 83, 0.3); }
+        
+        .btn-file { 
+            background: #37474f; color: #eceff1; 
+            border: 1px solid #546e7a;
+        }
+        .btn-file.loaded { 
+            background: #212121; 
+            border-color: #ff9800; 
+            color: #ff9800;
+        }
         
         input[type="file"] { display: none; }
         
-        /* Texto de estado */
+        /* --- MONITOR DE DATOS --- */
         #status { 
-            font-family: monospace; color: #00e676; 
-            background: #000; padding: 10px; width: 90%; 
-            margin: 0 auto; border-radius: 5px;
-            font-size: 0.8rem; line-height: 1.4;
+            font-family: 'Consolas', monospace; 
+            color: #69f0ae; 
+            font-size: 0.8rem; 
+            height: 40px;
+            margin-bottom: 10px;
+            display: flex; justify-content: center; align-items: center; gap: 15px;
         }
     </style>
 </head>
 <body>
 
-    <h2>🎛️ MODO VIBRO-VERB</h2>
-    
-    <button class="btn btn-connect" id="btn-con" onclick="initMIDI()">🔌 1. Conectar HX Stomp</button>
-    
-    <label class="btn btn-file" id="lbl-file">
-        📂 2. Cargar JM Vibro Verb.hlx
-        <input type="file" onchange="loadFile(this)">
-    </label>
+    <h2>🎛️ Vibro-Verb Control</h2>
 
-    <div id="pad-container">
-        <div id="cursor"></div>
+    <div id="pad-wrapper">
+        <div id="pad-container">
+            <div id="cursor"></div>
+        </div>
     </div>
 
-    <div id="status">Esperando archivo...</div>
+    <div id="status">Esperando conexión...</div>
+
+    <div class="controls-area">
+        <button class="btn btn-connect" id="btn-con" onclick="initMIDI()">🔌 Conectar HX Stomp</button>
+        
+        <label class="btn btn-file" id="lbl-file">
+            📂 Cargar Archivo .hlx
+            <input type="file" onchange="loadFile(this)">
+        </label>
+    </div>
 
 <script>
-    // Mapa MIDI estándar de Helix
+    // --- LÓGICA INTERNA (No tocar) ---
     const CC_MAP = { "Drive": 4, "Bass": 5, "Mid": 6, "Treble": 7, "Presence": 8, "ChVol": 10, "Master": 9 };
     let midiOut = null;
     let baseParams = {}; 
 
-    // 1. CONEXIÓN MIDI
     async function initMIDI() {
         try {
             const access = await navigator.requestMIDIAccess();
             const outputs = Array.from(access.outputs.values());
             midiOut = outputs.find(o => o.name.includes("Helix") || o.name.includes("HX") || o.name.includes("Line 6")) || outputs[0];
             if(midiOut) {
-                document.getElementById('btn-con').innerText = "✅ CONECTADO: " + midiOut.name;
+                document.getElementById('btn-con').innerHTML = "✅ <b>" + midiOut.name + "</b>";
                 document.getElementById('btn-con').style.background = "#b9f6ca";
             }
-        } catch(e) { alert("Error MIDI: " + e); }
+        } catch(e) { alert("Error: No se detectó MIDI USB"); }
     }
 
-    // 2. LEER TU ARCHIVO
     function loadFile(input) {
         const file = input.files[0];
         if(!file) return;
         const reader = new FileReader();
         reader.onload = (e) => {
             const txt = e.target.result;
-            // Extraer parámetros base de tu archivo
             Object.keys(CC_MAP).forEach(k => {
                 const regex = new RegExp(`"${k}":\\s*([0-9.]+)`);
                 const match = regex.exec(txt);
@@ -110,16 +177,16 @@
 
             if(Object.keys(baseParams).length > 0) {
                 document.getElementById('lbl-file').classList.add('loaded');
-                document.getElementById('lbl-file').innerHTML = `✅ ${file.name.substring(0,20)}`;
-                document.getElementById('status').innerText = "¡LISTO! Mueve el punto:\n⬆️ Arriba: Crunch | ⬇️ Abajo: Clean\n➡️ Derecha: Potencia | ⬅️ Izquierda: Suave";
+                document.getElementById('lbl-file').innerHTML = `✅ ${file.name.substring(0,18)}...`;
+                document.getElementById('status').innerText = "Listo para tocar";
             } else {
-                alert("Error: No encontré parámetros de Amplificador en este archivo.");
+                alert("Error: Archivo inválido o sin Amplificador.");
             }
         };
         reader.readAsText(file);
     }
 
-    // 3. LOGICA MATEMÁTICA "SUPER VIB"
+    // --- JOYSTICK LOGIC ---
     const pad = document.getElementById('pad-container');
     const cursor = document.getElementById('cursor');
 
@@ -131,7 +198,6 @@
         let x = (e.clientX - rect.left) / rect.width;
         let y = (e.clientY - rect.top) / rect.height;
         
-        // Limitar entre 0 y 1
         x = Math.max(0, Math.min(1, x));
         y = Math.max(0, Math.min(1, y));
 
@@ -141,7 +207,6 @@
         calculateAndSend(x, y);
     });
 
-    // Para móviles
     pad.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
 
     function calculateAndSend(x, y) {
@@ -150,46 +215,31 @@
 
         Object.keys(baseParams).forEach(key => {
             if(CC_MAP[key]) {
-                const baseVal = baseParams[key]; // Valor original del archivo (Centro)
+                const baseVal = baseParams[key];
                 let finalVal = baseVal;
 
-                // --- LÓGICA DE TRANSFORMACIÓN ---
-                
-                // 1. DRIVE: Controlado por Y (Arriba=0, Abajo=1)
-                // Arriba (0) suma hasta +4.0 de ganancia. Abajo (1) resta hasta -4.0 (Clean)
+                // LOGICA VIBRO-VERB (Igual que antes)
                 if (key === "Drive") {
-                    const modifier = (0.5 - y) * 8.0; // Rango de +/- 4.0
-                    finalVal = baseVal + modifier;
+                    // Y: Arriba(0)=+4, Abajo(1)=-4
+                    finalVal = baseVal + ((0.5 - y) * 8.0);
                 }
-
-                // 2. PRESENCE y TREBLE: Controlado por X (Der=1, Izq=0)
-                // Derecha da más brillo/presencia. Izquierda lo mantiene suave.
                 if (key === "Presence" || key === "Treble") {
-                    const modifier = (x - 0.5) * 4.0; // Rango de +/- 2.0
-                    finalVal = baseVal + modifier;
+                    // X: Der(1)=+2, Izq(0)=-2
+                    finalVal = baseVal + ((x - 0.5) * 4.0);
                 }
-
-                // 3. MASTER / CH VOL: Controlado por X (Potencia)
-                // Derecha da un empujón de volumen ("Potencia")
                 if (key === "ChVol" || key === "Master") {
-                    const modifier = (x - 0.5) * 3.0; // Un poco más de volumen a la derecha
-                    finalVal = baseVal + modifier;
+                    // X: Der(1)=+3 vol
+                    finalVal = baseVal + ((x - 0.5) * 3.0);
                 }
 
-                // --- ENVÍO MIDI ---
-                // Convertir valor 0.0-10.0 a MIDI 0-127
                 let midiVal = Math.floor(finalVal * 12.7);
-                
-                // Seguridad: Limitar entre 0 y 127
                 midiVal = Math.max(0, Math.min(127, midiVal));
 
                 if(midiOut) midiOut.send([0xB0, CC_MAP[key], midiVal]);
                 
-                // Mostrar en pantalla (Decodificado a 0-10 para que lo entiendas)
-                const displayVal = (midiVal / 12.7).toFixed(1);
-                if(key === "Drive" || key === "Presence") {
-                    msg += `${key}: ${displayVal}  `;
-                }
+                // Mostrar Drive y Presencia
+                if(key === "Drive") msg += `DRIVE: ${(midiVal/12.7).toFixed(1)}  `;
+                if(key === "Presence") msg += `PRES: ${(midiVal/12.7).toFixed(1)}`;
             }
         });
         document.getElementById('status').innerText = msg;
