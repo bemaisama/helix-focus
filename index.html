@@ -2,54 +2,60 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Helix Focus - UI Pro Top</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Helix Focus - Mobile Fix</title>
     <style>
-        /* --- ESTILO GENERAL (UI PRO) --- */
+        /* --- ESTILO GENERAL (CORREGIDO PARA MÓVIL) --- */
         body { 
             background-color: #121212; 
             color: #e0e0e0; 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             text-align: center; 
             margin: 0; 
-            height: 100vh;
+            padding: 0;
+            
+            /* TRUCO PARA MÓVIL: */
+            position: fixed; /* Evita el "rebote" de la pantalla */
+            top: 0; left: 0; right: 0; bottom: 0;
+            height: 100dvh; /* 'dvh' se adapta si aparecen/desaparecen las barras del navegador */
+            
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start;
+            justify-content: space-between; /* Distribuye mejor el espacio vertical */
             overflow: hidden;
         }
         
         h2 { 
             color: #ff9800; 
-            font-size: 1.2rem; 
+            font-size: 1.1rem; 
             letter-spacing: 1px; 
-            margin: 15px 0 10px 0; /* Margen reducido ligeramente */
+            margin: 10px 0 5px 0; 
             text-transform: uppercase;
-            flex-shrink: 0; /* Evita que el título se aplaste */
+            flex-shrink: 0; 
         }
 
-        /* --- BOTONES (AHORA ARRIBA) --- */
+        /* --- BOTONES --- */
         .controls-area {
             width: 100%;
             display: flex;
-            flex-direction: column; /* Cambia a 'row' si los quieres uno al lado del otro */
+            flex-direction: column; 
             gap: 8px;
-            padding-bottom: 10px;
+            padding-bottom: 5px;
             align-items: center;
-            flex-shrink: 0; /* Evita que los botones se aplasten si falta espacio */
+            flex-shrink: 0; 
             z-index: 10;
         }
 
         .btn { 
-            padding: 10px 25px; /* Un poco más compactos */
+            padding: 10px 20px; 
             border-radius: 30px; 
             border: none; 
             font-weight: 600; 
             cursor: pointer; 
             width: 80%; 
             max-width: 300px;
-            font-size: 0.9rem; 
+            font-size: 0.85rem; 
             transition: transform 0.1s;
             display: flex; align-items: center; justify-content: center; gap: 8px;
         }
@@ -69,20 +75,24 @@
         
         input[type="file"] { display: none; }
         
-        /* --- CONTENEDOR DEL JOYSTICK (CAMBIO DE TAMAÑO) --- */
+        /* --- CONTENEDOR DEL JOYSTICK --- */
         #pad-wrapper {
-            flex-grow: 1; /* Ocupa todo el espacio restante en el centro */
+            flex-grow: 1; 
             display: flex;
             align-items: center;
             justify-content: center;
             width: 100%;
             position: relative;
+            /* Evita que el contenedor sea más grande que el espacio disponible */
+            overflow: hidden; 
         }
 
         #pad-container {
-            /* TAMAÑO ARREGLADO: Ahora es un cuadrado responsivo */
-            width: 85vw; 
-            height: 85vw; 
+            /* CAMBIO CLAVE: Usamos 'vmin' en lugar de 'vw' */
+            /* Esto toma el 80% del lado MÁS PEQUEÑO de la pantalla (sea ancho o alto) */
+            width: 75vmin; 
+            height: 75vmin; 
+            
             max-width: 350px; 
             max-height: 350px;
             
@@ -94,14 +104,12 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
         
-        /* Guías visuales (Cruz central) */
         #pad-container::after, #pad-container::before {
             content: ""; position: absolute; background: rgba(255, 152, 0, 0.1); pointer-events: none;
         }
         #pad-container::after { top: 50%; left: 10px; right: 10px; height: 1px; }
         #pad-container::before { left: 50%; top: 10px; bottom: 10px; width: 1px; }
 
-        /* El punto rojo */
         #cursor {
             width: 40px; height: 40px; 
             background: rgba(255, 152, 0, 0.8);
@@ -114,7 +122,6 @@
             box-shadow: 0 0 15px rgba(255, 152, 0, 0.6);
             transition: width 0.1s, height 0.1s;
         }
-        /* Efecto al tocar */
         #pad-container:active #cursor { width: 35px; height: 35px; background: #fff; }
 
         /* --- MONITOR DE DATOS --- */
@@ -123,9 +130,13 @@
             color: #69f0ae; 
             font-size: 0.8rem; 
             height: 40px;
+            /* Margen inferior seguro para iPhones nuevos (la barrita de home) */
+            padding-bottom: env(safe-area-inset-bottom); 
             margin-bottom: 10px;
             display: flex; justify-content: center; align-items: center; gap: 15px;
             flex-shrink: 0;
+            background: rgba(0,0,0,0.2); /* Fondo suave para leer mejor */
+            width: 100%;
         }
     </style>
 </head>
@@ -151,7 +162,7 @@
     <div id="status">Esperando conexión...</div>
 
 <script>
-    // --- LÓGICA INTERNA (No tocar) ---
+    // --- LÓGICA INTERNA (Igual que antes) ---
     const CC_MAP = { "Drive": 4, "Bass": 5, "Mid": 6, "Treble": 7, "Presence": 8, "ChVol": 10, "Master": 9 };
     let midiOut = null;
     let baseParams = {}; 
@@ -223,17 +234,13 @@
                 const baseVal = baseParams[key];
                 let finalVal = baseVal;
 
-                // LOGICA VIBRO-VERB (Igual que antes)
                 if (key === "Drive") {
-                    // Y: Arriba(0)=+4, Abajo(1)=-4
                     finalVal = baseVal + ((0.5 - y) * 8.0);
                 }
                 if (key === "Presence" || key === "Treble") {
-                    // X: Der(1)=+2, Izq(0)=-2
                     finalVal = baseVal + ((x - 0.5) * 4.0);
                 }
                 if (key === "ChVol" || key === "Master") {
-                    // X: Der(1)=+3 vol
                     finalVal = baseVal + ((x - 0.5) * 3.0);
                 }
 
@@ -242,7 +249,6 @@
 
                 if(midiOut) midiOut.send([0xB0, CC_MAP[key], midiVal]);
                 
-                // Mostrar Drive y Presencia
                 if(key === "Drive") msg += `DRIVE: ${(midiVal/12.7).toFixed(1)}  `;
                 if(key === "Presence") msg += `PRES: ${(midiVal/12.7).toFixed(1)}`;
             }
