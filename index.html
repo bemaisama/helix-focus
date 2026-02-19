@@ -3,99 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Helix Focus Controller</title>
+    <title>Helix Focus - Modo 1 Preset</title>
     <style>
         body { 
             color: #e0e0e0; 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             text-align: center; 
             margin: 0; 
-            overflow: hidden;
+            overflow: hidden; 
             background-color: #121212; 
-            background-image: linear-gradient(rgba(18, 18, 18, 0.85), rgba(18, 18, 18, 0.85)), url('https://ortizo.com.co/cdn/shop/files/GS10372.jpg?v=1755619445&width=480');
+            background-image: linear-gradient(rgba(18, 18, 18, 0.9), rgba(18, 18, 18, 0.9)), url('https://ortizo.com.co/cdn/shop/files/GS10372.jpg?v=1755619445&width=480');
             background-size: cover;
             background-position: center center;
-            background-attachment: fixed;
         }
-        h2 { margin: 8px 0; color: #ff5722; font-size: 1.2rem; }
+        h2 { margin: 10px 0; color: #ff9800; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 2px; }
         
-        /* Controles de carga */
-        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 5px 10px; }
+        /* Controles */
+        .controls { display: flex; justify-content: center; gap: 10px; padding: 10px; }
         
         .file-btn { 
             background: #333; color: white; border: 1px solid #555; 
-            padding: 8px; border-radius: 6px; font-size: 0.75rem; 
-            cursor: pointer; transition: background-color 0.3s, border-color 0.3s;
-            display: flex; justify-content: center; align-items: center; gap: 5px;
-            position: relative; overflow: hidden; white-space: nowrap;
+            padding: 10px 20px; border-radius: 8px; font-size: 0.85rem; 
+            cursor: pointer; display: flex; align-items: center; gap: 8px;
+            width: 60%; justify-content: center;
         }
-        .file-btn.loaded { background-color: #004d40; border-color: #00e676; justify-content: space-between; }
+        .file-btn.loaded { background-color: #004d40; border-color: #00e676; }
         
-        /* Botón X individual pequeño */
-        .clear-x {
-            background: rgba(0,0,0,0.3); color: #ff5722;
-            border-radius: 50%; width: 18px; height: 18px;
-            line-height: 18px; text-align: center;
-            font-weight: bold; font-size: 10px; z-index: 10;
-        }
-
         input[type="file"] { display: none; }
         
         /* Botones Acción */
-        .action-btn { border: none; padding: 8px 15px; font-weight: bold; border-radius: 20px; cursor: pointer; font-size: 0.8rem; }
-        #connect-btn { background: #00e676; color: black; margin-bottom: 5px; }
-
-        /* ESTILO DEL BOTÓN RESET MODIFICADO */
-        #reset-all-btn { 
-            background: #b71c1c; 
-            color: rgba(255,255,255,0.8); 
-            font-size: 0.7rem; 
-            padding: 4px 12px; 
-            width: auto; /* Se ajusta al texto */
-            display: inline-block; 
-            margin: 0 auto 5px auto;
-            border-radius: 4px;
-            border: 1px solid #d32f2f;
+        .action-btn { border: none; padding: 10px 15px; font-weight: bold; border-radius: 8px; cursor: pointer; font-size: 0.8rem; margin: 5px; }
+        #connect-btn { background: #00e676; color: black; width: 90%; }
+        
+        /* Botón Mágico */
+        #magic-btn { 
+            background: linear-gradient(45deg, #ff5722, #ff9100); 
+            color: white; width: 90%; 
+            box-shadow: 0 4px 15px rgba(255, 87, 34, 0.4);
         }
-        #reset-all-btn:hover { background: #d32f2f; color: white; }
+        #magic-btn:active { transform: scale(0.98); }
 
-        /* El Pad XY */
+        /* Pad */
         #pad-container {
-            width: 92vw; height: 50vh; margin: 0 auto;
+            width: 90vw; height: 50vh; margin: 10px auto;
             background: radial-gradient(circle, #2c2c2c 0%, #1a1a1a 100%);
-            border: 2px solid #ff5722; border-radius: 8px;
+            border: 2px solid #ff9800; border-radius: 12px;
             position: relative; touch-action: none; 
         }
         #cursor {
-            width: 25px; height: 25px; background: rgba(255, 87, 34, 0.8);
-            border: 2px solid #fff; border-radius: 50%;
-            position: absolute; transform: translate(-50%, -50%);
-            top: 50%; left: 50%; box-shadow: 0 0 10px #ff5722;
+            width: 40px; height: 40px; background: rgba(255, 152, 0, 0.8);
+            border: 3px solid #fff; border-radius: 50%;
+            position: absolute; top: 50%; left: 50%; 
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 20px #ff9800;
         }
 
-        /* Monitor de datos */
-        #status { font-family: monospace; font-size: 0.8rem; color: #00e676; margin-top: 5px; white-space: pre-wrap; height: 60px; overflow-y: auto; }
+        /* Monitor */
+        #status { font-family: monospace; font-size: 0.9rem; color: #00e676; margin-top: 5px; height: 80px; white-space: pre-wrap; }
+        
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
-    <h2>Helix Focus View</h2>
-    <button id="connect-btn" class="action-btn" onclick="initMIDI()">🔌 Conectar USB MIDI</button>
+    <h2>Helix Focus (Modo 1 Archivo)</h2>
+    
+    <button id="connect-btn" class="action-btn" onclick="initMIDI()">🔌 1. Conectar USB MIDI</button>
 
     <div class="controls">
-        <label class="file-btn" id="lbl-tl">📂 A (Top-L)<input type="file" onchange="loadHlx(this, 'tl')"></label>
-        <label class="file-btn" id="lbl-tr">📂 B (Top-R)<input type="file" onchange="loadHlx(this, 'tr')"></label>
-        <label class="file-btn" id="lbl-bl">📂 C (Bot-L)<input type="file" onchange="loadHlx(this, 'bl')"></label>
-        <label class="file-btn" id="lbl-br">📂 D (Bot-R)<input type="file" onchange="loadHlx(this, 'br')"></label>
+        <label class="file-btn" id="lbl-tl">
+            📂 2. Cargar Preset Base
+            <input type="file" onchange="loadBaseHlx(this)">
+        </label>
     </div>
     
-    <button id="reset-all-btn" onclick="resetAll()">🗑️ Resetear Todo</button>
+    <button id="magic-btn" class="action-btn hidden" onclick="generateVariations()">✨ 3. Crear Variación Automática</button>
 
     <div id="pad-container">
         <div id="cursor"></div>
     </div>
 
-    <div id="status">Esperando conexión...</div>
+    <div id="status">Carga un archivo .hlx para empezar</div>
 
 <script>
     const CC_MAP = {
@@ -105,34 +93,32 @@
     };
 
     let midiOut = null;
-    let corners = { tl: {}, tr: {}, bl: {}, br: {} };
-
-    document.addEventListener('DOMContentLoaded', loadSessionFromStorage);
+    // Ahora solo usamos Start (Inicio) y End (Fin) para simplificar
+    let presetBase = {};
+    let presetMax = {}; 
 
     async function initMIDI() {
         try {
             const access = await navigator.requestMIDIAccess();
             const outputs = Array.from(access.outputs.values());
-            midiOut = outputs.find(o => o.name.includes("Helix") || o.name.includes("HX") || o.name.includes("Line 6"));
-            if (!midiOut && outputs.length > 0) midiOut = outputs[0];
+            midiOut = outputs.find(o => o.name.includes("Helix") || o.name.includes("HX") || o.name.includes("Line 6")) || outputs[0];
             
             if (midiOut) {
-                document.getElementById('connect-btn').style.background = "#2196F3";
-                document.getElementById('connect-btn').innerText = "✅ " + midiOut.name;
-                log("Conectado a: " + midiOut.name);
+                document.getElementById('connect-btn').innerText = "✅ Conectado: " + midiOut.name;
+                document.getElementById('connect-btn').style.background = "#b9f6ca";
             } else { alert("No se encontró pedal MIDI."); }
         } catch (e) { alert("Error MIDI: " + e); }
     }
 
-    function loadHlx(input, key) {
+    function loadBaseHlx(input) {
         const file = input.files[0];
         if (!file) return;
         
         const reader = new FileReader();
         reader.onload = (e) => {
             try {
-                const json = JSON.parse(e.target.result);
-                const str = JSON.stringify(json);
+                // Leer el archivo
+                const str = JSON.stringify(JSON.parse(e.target.result));
                 const params = {};
                 
                 Object.keys(CC_MAP).forEach(pName => {
@@ -142,109 +128,97 @@
                 });
 
                 if (Object.keys(params).length > 0) {
-                    corners[key] = params;
-                    localStorage.setItem(`helixFocus_params_${key}`, JSON.stringify(params));
-                    localStorage.setItem(`helixFocus_fileName_${key}`, file.name);
-                    updateCornerUI(key, file.name);
-                    log(`Cargado ${key.toUpperCase()}`);
-                } else { log(`Error: Sin parámetros en ${file.name}`); }
-            } catch (err) { log("Error leyendo archivo."); }
+                    presetBase = params; // Guardamos el sonido original
+                    document.getElementById('lbl-tl').classList.add('loaded');
+                    document.getElementById('lbl-tl').innerHTML = `✅ ${file.name.substring(0,15)}...`;
+                    document.getElementById('magic-btn').classList.remove('hidden');
+                    document.getElementById('status').innerText = "Archivo cargado. \n¡Ahora pulsa el botón naranja!";
+                } else {
+                    document.getElementById('status').innerText = "Error: El preset no tiene parámetros Drive/Bass/Mid reconocibles.";
+                }
+            } catch (err) { alert("Archivo inválido"); }
         };
         reader.readAsText(file);
     }
 
-    function updateCornerUI(key, fileName) {
-        const input = document.querySelector(`input[onchange="loadHlx(this, '${key}')"]`);
-        const label = input.parentElement;
+    function generateVariations() {
+        if (Object.keys(presetBase).length === 0) return;
+
+        // CLONAR Y MODIFICAR PARA CREAR EL PRESET "DESTINO"
+        presetMax = { ...presetBase }; // Copia exacta
         
-        if (fileName) {
-            label.classList.add('loaded');
-            const displayName = fileName.length > 12 ? fileName.substring(0, 9) + '..' : fileName;
-            label.innerHTML = `<span>✅ ${displayName}</span><span class="clear-x" onclick="clearCorner(event, '${key}')">✖</span><input type="file" onchange="loadHlx(this, '${key}')">`;
-        } else {
-            label.classList.remove('loaded');
-            const cornerName = {tl: 'Top-L', tr: 'Top-R', bl: 'Bot-L', br: 'Bot-R'}[key];
-            label.innerHTML = `📂 ${cornerName}<input type="file" onchange="loadHlx(this, '${key}')">`;
-        }
+        // Aquí ocurre la magia: Modificamos los valores virtualmente
+        if(presetMax["Drive"] !== undefined) presetMax["Drive"] = 100; // Drive al máximo
+        if(presetMax["Mid"] !== undefined) presetMax["Mid"] = Math.min(100, (presetMax["Mid"] || 50) + 30); // Subir medios
+        if(presetMax["Bass"] !== undefined) presetMax["Bass"] = Math.max(0, (presetMax["Bass"] || 50) - 20); // Bajar bajos (corte)
+        
+        // Master y ChVol se quedan igual para no cambiar volumen drásticamente
+        
+        document.getElementById('magic-btn').innerText = "⚡ ¡AUTO-MODO ACTIVADO! ⚡";
+        document.getElementById('magic-btn').style.background = "#212121";
+        document.getElementById('status').innerText = "Izquierda = Tu Preset Original\nDerecha = Versión Turbo (Auto-generada)";
     }
 
-    function clearCorner(e, key) {
-        e.preventDefault(); e.stopPropagation();
-        corners[key] = {};
-        localStorage.removeItem(`helixFocus_params_${key}`);
-        localStorage.removeItem(`helixFocus_fileName_${key}`);
-        updateCornerUI(key, null);
-        log(`Preset ${key.toUpperCase()} borrado.`);
-    }
-
-    function resetAll() {
-        if(!confirm("¿Borrar todo?")) return;
-        ['tl', 'tr', 'bl', 'br'].forEach(key => {
-            corners[key] = {};
-            localStorage.removeItem(`helixFocus_params_${key}`);
-            localStorage.removeItem(`helixFocus_fileName_${key}`);
-            updateCornerUI(key, null);
-        });
-        log("Todo borrado.");
-    }
-
-    function loadSessionFromStorage() {
-        ['tl', 'tr', 'bl', 'br'].forEach(key => {
-            const paramsStr = localStorage.getItem(`helixFocus_params_${key}`);
-            const fileName = localStorage.getItem(`helixFocus_fileName_${key}`);
-            if (paramsStr && fileName) {
-                corners[key] = JSON.parse(paramsStr);
-                updateCornerUI(key, fileName);
-            }
-        });
-    }
-
+    // --- INTERPOLACIÓN ---
     const pad = document.getElementById('pad-container');
     const cursor = document.getElementById('cursor');
 
     pad.addEventListener('pointermove', (e) => {
-        if (!e.isPrimary) return; 
-        if (e.buttons === 0 && e.pointerType === 'mouse') return;
-        
+        if (!e.isPrimary || (e.buttons === 0 && e.pointerType === 'mouse')) return;
+        if (Object.keys(presetMax).length === 0) return; // Si no ha activado el modo mágico, no hace nada
+
         const rect = pad.getBoundingClientRect();
         let x = (e.clientX - rect.left) / rect.width;
-        let y = (e.clientY - rect.top) / rect.height;
-        x = Math.max(0, Math.min(1, x));
-        y = Math.max(0, Math.min(1, y));
+        x = Math.max(0, Math.min(1, x)); // 0 a 1
 
         cursor.style.left = (x * 100) + '%';
-        cursor.style.top = (y * 100) + '%';
-        processMidi(x, y);
+        cursor.style.top = '50%'; // Bloqueamos Y para hacerlo más fácil (solo Izq-Der)
+        
+        processMidi(x);
     });
-
+    
+    // Evitar scroll en móvil
     pad.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
 
-    function processMidi(x, y) {
+    function processMidi(x) {
         if (!midiOut) return;
         let logStr = "";
-        const params = Object.keys(corners.tl).length > 0 ? Object.keys(corners.tl) : 
-                      (Object.keys(corners.tr).length > 0 ? Object.keys(corners.tr) : []);
 
-        params.forEach(param => {
+        Object.keys(presetBase).forEach(param => {
             if (CC_MAP[param]) {
-                const vTL = corners.tl[param] || 0;
-                const vTR = corners.tr[param] || vTL;
-                const vBL = corners.bl[param] || vTL;
-                const vBR = corners.br[param] || vTL;
+                const startVal = presetBase[param]; // Valor Original
+                const endVal = presetMax[param];   // Valor "Turbo" (Auto-generado)
 
-                const top = vTL + (vTR - vTL) * x;
-                const bottom = vBL + (vBR - vBL) * x;
-                const val = top + (bottom - top) * y;
+                // Calcular valor intermedio
+                const currentVal = startVal + (endVal - startVal) * x;
+                const midiVal = Math.min(127, Math.max(0, Math.floor(currentVal * 127))); // Escala MIDI (0-127) de la Helix
 
-                const midiVal = Math.min(127, Math.max(0, Math.floor(val * 127)));
-                midiOut.send([0xB0, CC_MAP[param], midiVal]);
-                logStr += `${param}: ${midiVal} `;
+                // IMPORTANTE: En Helix los valores internos suelen ser 0.0-1.0, pero MIDI es 0-127.
+                // Si el preset dice "0.5", enviamos MIDI 64.
+                // Si el parametro del JSON venía en formato 0-10, hay que ajustar. 
+                // Asumimos que el JSON trae formato 0.0-1.0 (standard Helix).
+                
+                // Si el JSON trae valores enteros (ej: Drive: 5.0), la fórmula cambia.
+                // Ajuste rápido: Si detectamos valor > 1 en el original, asumimos escala 0-10
+                let finalMidi = 0;
+                if (startVal > 1.0) {
+                     // Escala 0-10 (común en Helix Edit display, pero el JSON suele ser 0-1)
+                     // Pero por seguridad, usaremos mapeo directo si parece MIDI.
+                     finalMidi = Math.floor(currentVal * 12.7); 
+                } else {
+                     // Escala 0.0 - 1.0
+                     finalMidi = Math.floor(currentVal * 127);
+                }
+                
+                // Corrección de seguridad para no pasarse
+                finalMidi = Math.min(127, Math.max(0, finalMidi));
+
+                midiOut.send([0xB0, CC_MAP[param], finalMidi]);
+                logStr += `${param}: ${finalMidi} \n`;
             }
         });
-        if(logStr) document.getElementById('status').innerText = logStr;
+        document.getElementById('status').innerText = logStr;
     }
-
-    function log(msg) { document.getElementById('status').innerText = msg; }
 </script>
 </body>
 </html>
