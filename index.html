@@ -3,52 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Helix Focus - Auto Mode</title>
+    <title>Helix Focus - VibroVerb Edition</title>
     <style>
         body { 
-            background-color: #121212; color: #fff; 
-            font-family: sans-serif; text-align: center; margin: 0; overflow: hidden;
+            background-color: #1a1a1a; color: #fff; 
+            font-family: 'Segoe UI', sans-serif; text-align: center; margin: 0; overflow: hidden;
         }
         
-        /* Joystick que brilla */
+        h2 { color: #ff5722; text-transform: uppercase; letter-spacing: 1px; margin-top: 15px;}
+        
+        /* El Joystick */
         #pad-container {
-            width: 90vw; height: 50vh; margin: 20px auto;
-            background: radial-gradient(circle, #333 0%, #000 100%);
-            border: 2px solid #ff5722; border-radius: 15px;
+            width: 90vw; height: 55vh; margin: 15px auto;
+            /* Fondo con gradiente visual para guiarte */
+            background: linear-gradient(to bottom, #4e342e 0%, #263238 100%);
+            border: 3px solid #ff5722; border-radius: 15px;
             position: relative; touch-action: none;
-            box-shadow: 0 0 20px rgba(255, 87, 34, 0.3);
+            box-shadow: 0 0 25px rgba(255, 87, 34, 0.2);
         }
+        
+        /* Líneas guía del centro */
+        #pad-container::after {
+            content: ""; position: absolute; top: 50%; left: 0; right: 0; border-top: 1px dashed rgba(255,255,255,0.2); pointer-events: none;
+        }
+        #pad-container::before {
+            content: ""; position: absolute; left: 50%; top: 0; bottom: 0; border-left: 1px dashed rgba(255,255,255,0.2); pointer-events: none;
+        }
+
         #cursor {
-            width: 50px; height: 50px; background: rgba(255, 87, 34, 0.6);
+            width: 50px; height: 50px; background: rgba(255, 87, 34, 0.7);
             border: 3px solid #fff; border-radius: 50%;
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            pointer-events: none;
+            pointer-events: none; box-shadow: 0 0 15px #ff5722;
         }
 
         /* Botones */
         .btn { 
-            padding: 15px; border-radius: 10px; border: none; 
-            font-weight: bold; margin: 5px; cursor: pointer; width: 90%;
-            font-size: 1rem;
+            padding: 12px; border-radius: 8px; border: none; 
+            font-weight: bold; margin: 5px; cursor: pointer; width: 85%;
+            font-size: 0.9rem; text-transform: uppercase;
         }
         .btn-connect { background: #00e676; color: #000; }
-        .btn-file { background: #37474f; color: #fff; border: 1px solid #546e7a; position: relative;}
-        .btn-file.loaded { background: #2e7d32; border-color: #66bb6a; }
+        .btn-file { background: #37474f; color: #fff; border: 1px solid #546e7a; }
+        .btn-file.loaded { background: #ff5722; border-color: #ffab91; color: white; }
         
         input[type="file"] { display: none; }
         
         /* Texto de estado */
-        #status { font-family: monospace; color: #69f0ae; margin-top: 10px; white-space: pre; }
+        #status { 
+            font-family: monospace; color: #00e676; 
+            background: #000; padding: 10px; width: 90%; 
+            margin: 0 auto; border-radius: 5px;
+            font-size: 0.8rem; line-height: 1.4;
+        }
     </style>
 </head>
 <body>
 
-    <h2 style="color:#ff5722">MODO AUTO-VARIACIÓN</h2>
+    <h2>🎛️ MODO VIBRO-VERB</h2>
     
-    <button class="btn btn-connect" id="btn-con" onclick="initMIDI()">🔌 1. CONECTAR USB</button>
+    <button class="btn btn-connect" id="btn-con" onclick="initMIDI()">🔌 1. Conectar HX Stomp</button>
     
     <label class="btn btn-file" id="lbl-file">
-        📂 2. CARGAR PRESET BASE
+        📂 2. Cargar JM Vibro Verb.hlx
         <input type="file" onchange="loadFile(this)">
     </label>
 
@@ -56,33 +73,36 @@
         <div id="cursor"></div>
     </div>
 
-    <div id="status">Esperando...</div>
+    <div id="status">Esperando archivo...</div>
 
 <script>
-    const CC_MAP = { "Drive": 4, "Bass": 5, "Mid": 6, "Treble": 7, "Presence": 8, "Master": 9 };
+    // Mapa MIDI estándar de Helix
+    const CC_MAP = { "Drive": 4, "Bass": 5, "Mid": 6, "Treble": 7, "Presence": 8, "ChVol": 10, "Master": 9 };
     let midiOut = null;
-    let baseParams = {}; // Aquí guardamos tu archivo
+    let baseParams = {}; 
 
-    // 1. MIDI
+    // 1. CONEXIÓN MIDI
     async function initMIDI() {
         try {
             const access = await navigator.requestMIDIAccess();
             const outputs = Array.from(access.outputs.values());
-            midiOut = outputs.find(o => o.name.includes("Helix") || o.name.includes("HX")) || outputs[0];
-            if(midiOut) document.getElementById('btn-con').innerText = "✅ " + midiOut.name;
-        } catch(e) { alert(e); }
+            midiOut = outputs.find(o => o.name.includes("Helix") || o.name.includes("HX") || o.name.includes("Line 6")) || outputs[0];
+            if(midiOut) {
+                document.getElementById('btn-con').innerText = "✅ CONECTADO: " + midiOut.name;
+                document.getElementById('btn-con').style.background = "#b9f6ca";
+            }
+        } catch(e) { alert("Error MIDI: " + e); }
     }
 
-    // 2. LEER ARCHIVO
+    // 2. LEER TU ARCHIVO
     function loadFile(input) {
         const file = input.files[0];
         if(!file) return;
         const reader = new FileReader();
         reader.onload = (e) => {
             const txt = e.target.result;
-            // Buscamos los parámetros
+            // Extraer parámetros base de tu archivo
             Object.keys(CC_MAP).forEach(k => {
-                // Truco: Buscamos "Drive": 4.5  en el texto del archivo
                 const regex = new RegExp(`"${k}":\\s*([0-9.]+)`);
                 const match = regex.exec(txt);
                 if(match) baseParams[k] = parseFloat(match[1]);
@@ -90,60 +110,86 @@
 
             if(Object.keys(baseParams).length > 0) {
                 document.getElementById('lbl-file').classList.add('loaded');
-                document.getElementById('lbl-file').innerHTML = `✅ LISTO: ${file.name}`;
-                document.getElementById('status').innerText = "Izquierda = Original \nDerecha = AUTO-TURBO (+Drive +Mid)";
+                document.getElementById('lbl-file').innerHTML = `✅ ${file.name.substring(0,20)}`;
+                document.getElementById('status').innerText = "¡LISTO! Mueve el punto:\n⬆️ Arriba: Crunch | ⬇️ Abajo: Clean\n➡️ Derecha: Potencia | ⬅️ Izquierda: Suave";
             } else {
-                alert("Error: No encontré parámetros 'Drive' o 'Bass' en este archivo.");
+                alert("Error: No encontré parámetros de Amplificador en este archivo.");
             }
         };
         reader.readAsText(file);
     }
 
-    // 3. EL JOYSTICK "MÁGICO"
+    // 3. LOGICA MATEMÁTICA "SUPER VIB"
     const pad = document.getElementById('pad-container');
     const cursor = document.getElementById('cursor');
 
     pad.addEventListener('pointermove', (e) => {
         if(!e.isPrimary) return;
-        if(e.pointerType === 'mouse' && e.buttons === 0) return; // Click necesario en PC
+        if(e.pointerType === 'mouse' && e.buttons === 0) return; 
 
         const rect = pad.getBoundingClientRect();
         let x = (e.clientX - rect.left) / rect.width;
-        x = Math.max(0, Math.min(1, x)); // 0 a 1
-
-        // Mover visualmente solo en Horizontal (X) para simplificar
-        cursor.style.left = (x * 100) + '%';
+        let y = (e.clientY - rect.top) / rect.height;
         
-        sendMidi(x);
+        // Limitar entre 0 y 1
+        x = Math.max(0, Math.min(1, x));
+        y = Math.max(0, Math.min(1, y));
+
+        cursor.style.left = (x * 100) + '%';
+        cursor.style.top = (y * 100) + '%';
+        
+        calculateAndSend(x, y);
     });
 
-    function sendMidi(x) {
+    // Para móviles
+    pad.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+
+    function calculateAndSend(x, y) {
         if(Object.keys(baseParams).length === 0) return;
-        
         let msg = "";
 
         Object.keys(baseParams).forEach(key => {
             if(CC_MAP[key]) {
-                const startVal = baseParams[key];
-                let endVal = startVal;
+                const baseVal = baseParams[key]; // Valor original del archivo (Centro)
+                let finalVal = baseVal;
 
-                // --- AQUÍ ESTÁ LA MAGIA ---
-                // Si movemos a la derecha, el código INVENTA valores nuevos
-                if(key === "Drive") endVal = 10.0;   // El Drive siempre subirá al máximo
-                if(key === "Mid") endVal = 10.0;     // Los Medios subirán
-                if(key === "Bass") endVal = startVal * 0.5; // Los Bajos bajarán a la mitad
+                // --- LÓGICA DE TRANSFORMACIÓN ---
                 
-                // Calculamos el punto intermedio
-                const current = startVal + (endVal - startVal) * x;
+                // 1. DRIVE: Controlado por Y (Arriba=0, Abajo=1)
+                // Arriba (0) suma hasta +4.0 de ganancia. Abajo (1) resta hasta -4.0 (Clean)
+                if (key === "Drive") {
+                    const modifier = (0.5 - y) * 8.0; // Rango de +/- 4.0
+                    finalVal = baseVal + modifier;
+                }
+
+                // 2. PRESENCE y TREBLE: Controlado por X (Der=1, Izq=0)
+                // Derecha da más brillo/presencia. Izquierda lo mantiene suave.
+                if (key === "Presence" || key === "Treble") {
+                    const modifier = (x - 0.5) * 4.0; // Rango de +/- 2.0
+                    finalVal = baseVal + modifier;
+                }
+
+                // 3. MASTER / CH VOL: Controlado por X (Potencia)
+                // Derecha da un empujón de volumen ("Potencia")
+                if (key === "ChVol" || key === "Master") {
+                    const modifier = (x - 0.5) * 3.0; // Un poco más de volumen a la derecha
+                    finalVal = baseVal + modifier;
+                }
+
+                // --- ENVÍO MIDI ---
+                // Convertir valor 0.0-10.0 a MIDI 0-127
+                let midiVal = Math.floor(finalVal * 12.7);
                 
-                // Convertir a MIDI 0-127
-                // (La Helix usa internamente 0.0-10.0 para amps, así que multiplicamos por 12.7)
-                // Si tu archivo usa valores 0.0-1.0, ajusta aquí.
-                let midiVal = Math.floor(current * 12.7); 
-                if(midiVal > 127) midiVal = 127;
+                // Seguridad: Limitar entre 0 y 127
+                midiVal = Math.max(0, Math.min(127, midiVal));
 
                 if(midiOut) midiOut.send([0xB0, CC_MAP[key], midiVal]);
-                msg += `${key}: ${midiVal} `;
+                
+                // Mostrar en pantalla (Decodificado a 0-10 para que lo entiendas)
+                const displayVal = (midiVal / 12.7).toFixed(1);
+                if(key === "Drive" || key === "Presence") {
+                    msg += `${key}: ${displayVal}  `;
+                }
             }
         });
         document.getElementById('status').innerText = msg;
