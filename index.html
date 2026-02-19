@@ -1,291 +1,500 @@
 <!DOCTYPE html>
+
 <html lang="es">
+
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Helix Focus - Master</title>
+
+    <title>Helix Focus Controller</title>
+
     <style>
+
         body { 
+
             color: #e0e0e0; 
-            font-family: 'Segoe UI', sans-serif; 
+
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+
             text-align: center; 
+
             margin: 0; 
-            overflow: hidden; 
+
+            overflow: hidden;
+
             background-color: #121212; 
-            /* Fondo oscuro profesional */
-            background-image: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('https://ortizo.com.co/cdn/shop/files/GS10372.jpg?v=1755619445&width=480');
+
+            background-image: linear-gradient(rgba(18, 18, 18, 0.85), rgba(18, 18, 18, 0.85)), url('https://ortizo.com.co/cdn/shop/files/GS10372.jpg?v=1755619445&width=480');
+
             background-size: cover;
-            background-position: center;
+
+            background-position: center center;
+
+            background-attachment: fixed;
+
         }
 
-        h2 { margin: 10px 0; color: #ff9800; letter-spacing: 1px; }
+        h2 { margin: 8px 0; color: #ff5722; font-size: 1.2rem; }
 
-        /* --- PAD XY (El Joystick) --- */
-        #pad-container {
-            width: 90vw; height: 45vh; margin: 10px auto;
-            background: radial-gradient(circle, #333 0%, #111 100%);
-            border: 2px solid #ff9800; border-radius: 12px;
-            position: relative; touch-action: none; 
-            box-shadow: 0 0 20px rgba(255, 152, 0, 0.2);
-        }
-        #cursor {
-            width: 40px; height: 40px; 
-            background: rgba(255, 152, 0, 0.5);
-            border: 3px solid #fff; border-radius: 50%;
-            position: absolute; transform: translate(-50%, -50%);
-            top: 50%; left: 50%; 
-            pointer-events: none; /* Deja pasar el click al fondo */
-            transition: background 0.2s;
-        }
-        #pad-container:active #cursor { background: rgba(255, 152, 0, 1); box-shadow: 0 0 15px #ff9800; }
-
-        /* --- BOTONES DE CARGA --- */
-        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px; }
         
+
+        /* Controles de carga */
+
+        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 5px 10px; }
+
+        
+
         .file-btn { 
-            background: #263238; color: #cfd8dc; border: 1px solid #455a64; 
-            padding: 8px; border-radius: 6px; font-size: 0.8rem; 
-            cursor: pointer; position: relative; display: flex; 
-            justify-content: center; align-items: center; min-height: 40px;
-        }
-        
-        /* Estilo cuando está cargado */
-        .file-btn.loaded { 
-            background-color: #1b5e20; /* Verde oscuro */
-            border-color: #66bb6a; 
-            color: #fff;
-            justify-content: space-between; 
-            padding-right: 35px; /* Espacio para la X */
+
+            background: #333; color: white; border: 1px solid #555; 
+
+            padding: 8px; border-radius: 6px; font-size: 0.75rem; 
+
+            cursor: pointer; transition: background-color 0.3s, border-color 0.3s;
+
+            display: flex; justify-content: center; align-items: center; gap: 5px;
+
+            position: relative; overflow: hidden; white-space: nowrap;
+
         }
 
-        /* --- BOTÓN DE BORRAR (LA X) --- */
+        .file-btn.loaded { background-color: #004d40; border-color: #00e676; justify-content: space-between; }
+
+        
+
+        /* Botón X individual pequeño */
+
         .clear-x {
-            position: absolute; right: 5px; top: 50%; transform: translateY(-50%);
-            background: #b71c1c; color: white;
-            border-radius: 50%; width: 24px; height: 24px;
-            line-height: 24px; text-align: center; font-weight: bold;
-            font-size: 14px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-            z-index: 100;
+
+            background: rgba(0,0,0,0.3); color: #ff5722;
+
+            border-radius: 50%; width: 18px; height: 18px;
+
+            line-height: 18px; text-align: center;
+
+            font-weight: bold; font-size: 10px; z-index: 10;
+
         }
-        .clear-x:hover { background: #ff5252; transform: translateY(-50%) scale(1.1); }
+
+
 
         input[type="file"] { display: none; }
 
-        /* --- BOTONES ACCIÓN --- */
-        .action-btn { 
-            border: none; padding: 12px 20px; font-weight: bold; 
-            border-radius: 25px; cursor: pointer; font-size: 0.9rem; width: 90%; margin: 5px; 
-            text-transform: uppercase;
-        }
-        #connect-btn { background: #00e676; color: #000; box-shadow: 0 4px 10px rgba(0, 230, 118, 0.3); }
-        #reset-btn { background: #d32f2f; color: white; width: auto; font-size: 0.7rem; padding: 5px 15px; }
+        
 
-        /* MONITOR */
-        #status { 
-            font-family: monospace; color: #69f0ae; margin-top: 10px; 
-            height: 100px; white-space: pre-wrap; font-size: 0.85rem;
-            background: rgba(0,0,0,0.5); padding: 5px; border-radius: 5px; width: 90%; margin-left: auto; margin-right: auto;
+        /* Botones Acción */
+
+        .action-btn { border: none; padding: 8px 15px; font-weight: bold; border-radius: 20px; cursor: pointer; font-size: 0.8rem; }
+
+        #connect-btn { background: #00e676; color: black; margin-bottom: 5px; }
+
+
+
+        /* ESTILO DEL BOTÓN RESET MODIFICADO */
+
+        #reset-all-btn { 
+
+            background: #b71c1c; 
+
+            color: rgba(255,255,255,0.8); 
+
+            font-size: 0.7rem; 
+
+            padding: 4px 12px; 
+
+            width: auto; /* Se ajusta al texto */
+
+            display: inline-block; 
+
+            margin: 0 auto 5px auto;
+
+            border-radius: 4px;
+
+            border: 1px solid #d32f2f;
+
         }
+
+        #reset-all-btn:hover { background: #d32f2f; color: white; }
+
+
+
+        /* El Pad XY */
+
+        #pad-container {
+
+            width: 92vw; height: 50vh; margin: 0 auto;
+
+            background: radial-gradient(circle, #2c2c2c 0%, #1a1a1a 100%);
+
+            border: 2px solid #ff5722; border-radius: 8px;
+
+            position: relative; touch-action: none; 
+
+        }
+
+        #cursor {
+
+            width: 25px; height: 25px; background: rgba(255, 87, 34, 0.8);
+
+            border: 2px solid #fff; border-radius: 50%;
+
+            position: absolute; transform: translate(-50%, -50%);
+
+            top: 50%; left: 50%; box-shadow: 0 0 10px #ff5722;
+
+        }
+
+
+
+        /* Monitor de datos */
+
+        #status { font-family: monospace; font-size: 0.8rem; color: #00e676; margin-top: 5px; white-space: pre-wrap; height: 60px; overflow-y: auto; }
+
     </style>
+
 </head>
+
 <body>
 
-    <h2>🎛️ Helix Focus Master</h2>
-    <button id="connect-btn" class="action-btn" onclick="initMIDI()">🔌 1. Conectar USB MIDI</button>
+
+
+    <h2>Helix Focus View</h2>
+
+    <button id="connect-btn" class="action-btn" onclick="initMIDI()">🔌 Conectar USB MIDI</button>
+
+
 
     <div class="controls">
-        <label class="file-btn">📂 A (Arriba-Izq)<input type="file" onchange="loadHlx(this, 'tl')"></label>
-        <label class="file-btn">📂 B (Arriba-Der)<input type="file" onchange="loadHlx(this, 'tr')"></label>
-        <label class="file-btn">📂 C (Abajo-Izq)<input type="file" onchange="loadHlx(this, 'bl')"></label>
-        <label class="file-btn">📂 D (Abajo-Der)<input type="file" onchange="loadHlx(this, 'br')"></label>
+
+        <label class="file-btn" id="lbl-tl">📂 A (Top-L)<input type="file" onchange="loadHlx(this, 'tl')"></label>
+
+        <label class="file-btn" id="lbl-tr">📂 B (Top-R)<input type="file" onchange="loadHlx(this, 'tr')"></label>
+
+        <label class="file-btn" id="lbl-bl">📂 C (Bot-L)<input type="file" onchange="loadHlx(this, 'bl')"></label>
+
+        <label class="file-btn" id="lbl-br">📂 D (Bot-R)<input type="file" onchange="loadHlx(this, 'br')"></label>
+
     </div>
 
-    <button id="reset-btn" class="action-btn" onclick="resetAll()">🗑️ Borrar Todo</button>
+    
+
+    <button id="reset-all-btn" onclick="resetAll()">🗑️ Resetear Todo</button>
+
+
 
     <div id="pad-container">
+
         <div id="cursor"></div>
+
     </div>
+
+
 
     <div id="status">Esperando conexión...</div>
 
+
+
 <script>
-    // --- MAPA MIDI (Ajusta si usas otros CC) ---
+
     const CC_MAP = {
+
         "Drive": 4,  "Bass": 5,   "Mid": 6, 
+
         "Treble": 7, "Presence": 8, "Master": 9,
+
         "ChVol": 10, "Mix": 11, "Decay": 12
+
     };
 
+
+
     let midiOut = null;
+
     let corners = { tl: {}, tr: {}, bl: {}, br: {} };
+
+
 
     document.addEventListener('DOMContentLoaded', loadSessionFromStorage);
 
-    // 1. CONEXIÓN MIDI
+
+
     async function initMIDI() {
+
         try {
+
             const access = await navigator.requestMIDIAccess();
+
             const outputs = Array.from(access.outputs.values());
-            // Busca dispositivos Line 6 o usa el primero que encuentre
-            midiOut = outputs.find(o => o.name.includes("Helix") || o.name.includes("HX") || o.name.includes("Line 6")) || outputs[0];
+
+            midiOut = outputs.find(o => o.name.includes("Helix") || o.name.includes("HX") || o.name.includes("Line 6"));
+
+            if (!midiOut && outputs.length > 0) midiOut = outputs[0];
+
             
+
             if (midiOut) {
-                document.getElementById('connect-btn').style.background = "#2979ff";
-                document.getElementById('connect-btn').style.color = "white";
-                document.getElementById('connect-btn').innerText = "✅ Conectado: " + midiOut.name;
-                log("MIDI Listo: " + midiOut.name);
-            } else { alert("No se detectó ningún pedal MIDI USB."); }
-        } catch (e) { alert("Error al conectar MIDI: " + e); }
+
+                document.getElementById('connect-btn').style.background = "#2196F3";
+
+                document.getElementById('connect-btn').innerText = "✅ " + midiOut.name;
+
+                log("Conectado a: " + midiOut.name);
+
+            } else { alert("No se encontró pedal MIDI."); }
+
+        } catch (e) { alert("Error MIDI: " + e); }
+
     }
 
-    // 2. CARGA DE ARCHIVOS
+
+
     function loadHlx(input, key) {
+
         const file = input.files[0];
+
         if (!file) return;
 
+        
+
         const reader = new FileReader();
+
         reader.onload = (e) => {
+
             try {
-                // Truco para limpiar el JSON y buscar parámetros
-                const jsonStr = JSON.stringify(JSON.parse(e.target.result));
+
+                const json = JSON.parse(e.target.result);
+
+                const str = JSON.stringify(json);
+
                 const params = {};
+
                 
+
                 Object.keys(CC_MAP).forEach(pName => {
+
                     const regex = new RegExp(`"${pName}":\\s*([0-9.]+)`, 'g');
-                    const match = regex.exec(jsonStr);
+
+                    const match = regex.exec(str);
+
                     if (match) params[pName] = parseFloat(match[1]);
+
                 });
 
+
+
                 if (Object.keys(params).length > 0) {
+
                     corners[key] = params;
-                    // Guardar en memoria
-                    localStorage.setItem(`hFx_p_${key}`, JSON.stringify(params));
-                    localStorage.setItem(`hFx_n_${key}`, file.name);
-                    updateUI(key, file.name);
-                    log(`Cargado ${key.toUpperCase()}: ${Object.keys(params).length} parámetros.`);
-                } else {
-                    log(`⚠️ Error: El archivo ${file.name} no tiene params (Drive, Bass, etc).`);
-                }
-            } catch (err) { log("Error: Archivo inválido."); }
+
+                    localStorage.setItem(`helixFocus_params_${key}`, JSON.stringify(params));
+
+                    localStorage.setItem(`helixFocus_fileName_${key}`, file.name);
+
+                    updateCornerUI(key, file.name);
+
+                    log(`Cargado ${key.toUpperCase()}`);
+
+                } else { log(`Error: Sin parámetros en ${file.name}`); }
+
+            } catch (err) { log("Error leyendo archivo."); }
+
         };
+
         reader.readAsText(file);
+
     }
 
-    // 3. ACTUALIZAR BOTONES (Pone la X roja)
-    function updateUI(key, fileName) {
-        // Encontrar el label correcto buscando el input dentro
+
+
+    function updateCornerUI(key, fileName) {
+
         const input = document.querySelector(`input[onchange="loadHlx(this, '${key}')"]`);
+
         const label = input.parentElement;
 
+        
+
         if (fileName) {
+
             label.classList.add('loaded');
-            const shortName = fileName.length > 10 ? fileName.substring(0, 9) + '..' : fileName;
-            // Aquí inyectamos el HTML con la X roja
-            label.innerHTML = `
-                <span>✅ ${shortName}</span>
-                <div class="clear-x" onclick="clearSlot(event, '${key}')">✖</div>
-                <input type="file" onchange="loadHlx(this, '${key}')">
-            `;
+
+            const displayName = fileName.length > 12 ? fileName.substring(0, 9) + '..' : fileName;
+
+            label.innerHTML = `<span>✅ ${displayName}</span><span class="clear-x" onclick="clearCorner(event, '${key}')">✖</span><input type="file" onchange="loadHlx(this, '${key}')">`;
+
         } else {
+
             label.classList.remove('loaded');
-            const names = {tl:'A (Arriba-Izq)', tr:'B (Arriba-Der)', bl:'C (Abajo-Izq)', br:'D (Abajo-Der)'};
-            label.innerHTML = `📂 ${names[key]}<input type="file" onchange="loadHlx(this, '${key}')">`;
+
+            const cornerName = {tl: 'Top-L', tr: 'Top-R', bl: 'Bot-L', br: 'Bot-R'}[key];
+
+            label.innerHTML = `📂 ${cornerName}<input type="file" onchange="loadHlx(this, '${key}')">`;
+
         }
+
     }
 
-    // 4. BORRAR SLOT INDIVIDUAL
-    function clearSlot(e, key) {
-        e.stopPropagation(); // Evita que se abra el selector de archivos
-        e.preventDefault();
-        
+
+
+    function clearCorner(e, key) {
+
+        e.preventDefault(); e.stopPropagation();
+
         corners[key] = {};
-        localStorage.removeItem(`hFx_p_${key}`);
-        localStorage.removeItem(`hFx_n_${key}`);
-        updateUI(key, null);
-        log(`Slot ${key.toUpperCase()} borrado.`);
+
+        localStorage.removeItem(`helixFocus_params_${key}`);
+
+        localStorage.removeItem(`helixFocus_fileName_${key}`);
+
+        updateCornerUI(key, null);
+
+        log(`Preset ${key.toUpperCase()} borrado.`);
+
     }
+
+
 
     function resetAll() {
+
         if(!confirm("¿Borrar todo?")) return;
-        ['tl','tr','bl','br'].forEach(k => clearSlot({stopPropagation:()=>{}, preventDefault:()=>{}}, k));
-    }
 
-    // 5. MEMORIA (Recargar al abrir)
-    function loadSessionFromStorage() {
-        ['tl','tr','bl','br'].forEach(key => {
-            const p = localStorage.getItem(`hFx_p_${key}`);
-            const n = localStorage.getItem(`hFx_n_${key}`);
-            if (p && n) {
-                corners[key] = JSON.parse(p);
-                updateUI(key, n);
-            }
+        ['tl', 'tr', 'bl', 'br'].forEach(key => {
+
+            corners[key] = {};
+
+            localStorage.removeItem(`helixFocus_params_${key}`);
+
+            localStorage.removeItem(`helixFocus_fileName_${key}`);
+
+            updateCornerUI(key, null);
+
         });
+
+        log("Todo borrado.");
+
     }
 
-    // --- JOYSTICK LOGIC ---
+
+
+    function loadSessionFromStorage() {
+
+        ['tl', 'tr', 'bl', 'br'].forEach(key => {
+
+            const paramsStr = localStorage.getItem(`helixFocus_params_${key}`);
+
+            const fileName = localStorage.getItem(`helixFocus_fileName_${key}`);
+
+            if (paramsStr && fileName) {
+
+                corners[key] = JSON.parse(paramsStr);
+
+                updateCornerUI(key, fileName);
+
+            }
+
+        });
+
+    }
+
+
+
     const pad = document.getElementById('pad-container');
+
     const cursor = document.getElementById('cursor');
 
+
+
     pad.addEventListener('pointermove', (e) => {
-        if (!e.isPrimary) return;
-        // Si es mouse, debe estar clicado. Si es touch, siempre funciona.
-        if (e.pointerType === 'mouse' && e.buttons === 0) return;
+
+        if (!e.isPrimary) return; 
+
+        if (e.buttons === 0 && e.pointerType === 'mouse') return;
+
+        
 
         const rect = pad.getBoundingClientRect();
+
         let x = (e.clientX - rect.left) / rect.width;
+
         let y = (e.clientY - rect.top) / rect.height;
-        
-        // Limites 0 a 1
+
         x = Math.max(0, Math.min(1, x));
+
         y = Math.max(0, Math.min(1, y));
 
-        // Mover cursor visualmente
+
+
         cursor.style.left = (x * 100) + '%';
+
         cursor.style.top = (y * 100) + '%';
 
-        // Enviar datos
         processMidi(x, y);
+
     });
+
+
 
     pad.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
 
+
+
     function processMidi(x, y) {
-        // TRUCO: Si no hay MIDI conectado, igual mostramos los números en pantalla para verificar
-        // Solo salimos si no hay ningún archivo cargado en 'tl' (A)
-        if (Object.keys(corners.tl).length === 0) return;
+
+        if (!midiOut) return;
 
         let logStr = "";
-        
-        // Iterar sobre los parámetros del archivo A
-        Object.keys(corners.tl).forEach(param => {
+
+        const params = Object.keys(corners.tl).length > 0 ? Object.keys(corners.tl) : 
+
+                      (Object.keys(corners.tr).length > 0 ? Object.keys(corners.tr) : []);
+
+
+
+        params.forEach(param => {
+
             if (CC_MAP[param]) {
-                // VALORES:
-                // Si la esquina B, C o D está vacía, usamos el valor de A (tl) como respaldo.
-                // Esto permite que funcione cargando solo 1 archivo.
-                const vTL = corners.tl[param]; 
-                const vTR = corners.tr[param] !== undefined ? corners.tr[param] : vTL;
-                const vBL = corners.bl[param] !== undefined ? corners.bl[param] : vTL;
-                const vBR = corners.br[param] !== undefined ? corners.br[param] : vTR; // Si falta D, usa B o A
 
-                // Interpolación Bilineal
-                const topVal = vTL + (vTR - vTL) * x;
-                const botVal = vBL + (vBR - vBL) * x;
-                const finalVal = topVal + (botVal - topVal) * y;
+                const vTL = corners.tl[param] || 0;
 
-                // Convertir a MIDI (0-127)
-                const midiVal = Math.floor(Math.min(127, Math.max(0, finalVal * 127)));
+                const vTR = corners.tr[param] || vTL;
 
-                // Enviar al pedal (si está conectado)
-                if (midiOut) midiOut.send([0xB0, CC_MAP[param], midiVal]);
-                
-                logStr += `${param}: ${midiVal}  `;
+                const vBL = corners.bl[param] || vTL;
+
+                const vBR = corners.br[param] || vTL;
+
+
+
+                const top = vTL + (vTR - vTL) * x;
+
+                const bottom = vBL + (vBR - vBL) * x;
+
+                const val = top + (bottom - top) * y;
+
+
+
+                const midiVal = Math.min(127, Math.max(0, Math.floor(val * 127)));
+
+                midiOut.send([0xB0, CC_MAP[param], midiVal]);
+
+                logStr += `${param}: ${midiVal} `;
+
             }
+
         });
-        
-        document.getElementById('status').innerText = logStr;
+
+        if(logStr) document.getElementById('status').innerText = logStr;
+
     }
 
+
+
     function log(msg) { document.getElementById('status').innerText = msg; }
+
 </script>
+
 </body>
+
 </html>
+
