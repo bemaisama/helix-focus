@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Helix Focus - UI Pro</title>
+    <title>Helix Focus - UI Pro Top</title>
     <style>
         /* --- ESTILO GENERAL (UI PRO) --- */
         body { 
@@ -24,17 +24,59 @@
             color: #ff9800; 
             font-size: 1.2rem; 
             letter-spacing: 1px; 
-            margin: 20px 0 10px 0;
+            margin: 15px 0 10px 0; /* Margen reducido ligeramente */
             text-transform: uppercase;
+            flex-shrink: 0; /* Evita que el título se aplaste */
         }
+
+        /* --- BOTONES (AHORA ARRIBA) --- */
+        .controls-area {
+            width: 100%;
+            display: flex;
+            flex-direction: column; /* Cambia a 'row' si los quieres uno al lado del otro */
+            gap: 8px;
+            padding-bottom: 10px;
+            align-items: center;
+            flex-shrink: 0; /* Evita que los botones se aplasten si falta espacio */
+            z-index: 10;
+        }
+
+        .btn { 
+            padding: 10px 25px; /* Un poco más compactos */
+            border-radius: 30px; 
+            border: none; 
+            font-weight: 600; 
+            cursor: pointer; 
+            width: 80%; 
+            max-width: 300px;
+            font-size: 0.9rem; 
+            transition: transform 0.1s;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn:active { transform: scale(0.97); }
+        
+        .btn-connect { background: #00c853; color: #000; box-shadow: 0 4px 10px rgba(0, 200, 83, 0.3); }
+        
+        .btn-file { 
+            background: #37474f; color: #eceff1; 
+            border: 1px solid #546e7a;
+        }
+        .btn-file.loaded { 
+            background: #212121; 
+            border-color: #ff9800; 
+            color: #ff9800;
+        }
+        
+        input[type="file"] { display: none; }
         
         /* --- CONTENEDOR DEL JOYSTICK (CAMBIO DE TAMAÑO) --- */
         #pad-wrapper {
-            flex-grow: 1; /* Ocupa el espacio disponible */
+            flex-grow: 1; /* Ocupa todo el espacio restante en el centro */
             display: flex;
             align-items: center;
             justify-content: center;
             width: 100%;
+            position: relative;
         }
 
         #pad-container {
@@ -75,44 +117,6 @@
         /* Efecto al tocar */
         #pad-container:active #cursor { width: 35px; height: 35px; background: #fff; }
 
-        /* --- BOTONES --- */
-        .controls-area {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            padding-bottom: 20px;
-            align-items: center;
-        }
-
-        .btn { 
-            padding: 12px 25px; 
-            border-radius: 30px; /* Redondos tipo pastilla */
-            border: none; 
-            font-weight: 600; 
-            cursor: pointer; 
-            width: 80%; 
-            max-width: 300px;
-            font-size: 0.9rem; 
-            transition: transform 0.1s;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-        }
-        .btn:active { transform: scale(0.97); }
-        
-        .btn-connect { background: #00c853; color: #000; box-shadow: 0 4px 10px rgba(0, 200, 83, 0.3); }
-        
-        .btn-file { 
-            background: #37474f; color: #eceff1; 
-            border: 1px solid #546e7a;
-        }
-        .btn-file.loaded { 
-            background: #212121; 
-            border-color: #ff9800; 
-            color: #ff9800;
-        }
-        
-        input[type="file"] { display: none; }
-        
         /* --- MONITOR DE DATOS --- */
         #status { 
             font-family: 'Consolas', monospace; 
@@ -121,20 +125,13 @@
             height: 40px;
             margin-bottom: 10px;
             display: flex; justify-content: center; align-items: center; gap: 15px;
+            flex-shrink: 0;
         }
     </style>
 </head>
 <body>
 
     <h2>🎛️ Vibro-Verb Control</h2>
-
-    <div id="pad-wrapper">
-        <div id="pad-container">
-            <div id="cursor"></div>
-        </div>
-    </div>
-
-    <div id="status">Esperando conexión...</div>
 
     <div class="controls-area">
         <button class="btn btn-connect" id="btn-con" onclick="initMIDI()">🔌 Conectar HX Stomp</button>
@@ -144,6 +141,14 @@
             <input type="file" onchange="loadFile(this)">
         </label>
     </div>
+
+    <div id="pad-wrapper">
+        <div id="pad-container">
+            <div id="cursor"></div>
+        </div>
+    </div>
+
+    <div id="status">Esperando conexión...</div>
 
 <script>
     // --- LÓGICA INTERNA (No tocar) ---
